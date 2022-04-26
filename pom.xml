@@ -23,6 +23,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <mockito.version>4.5.1</mockito.version>
     <jacoco.plugin.version>0.8.8</jacoco.plugin.version>
+    <opentelemetry.version>1.13.0</opentelemetry.version>
   </properties>
 
   <dependencies>
@@ -55,6 +56,24 @@
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>${mockito.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>${opentelemetry.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-extension-annotations</artifactId>
+      <version>${opentelemetry.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <version>${opentelemetry.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -71,7 +90,19 @@
           </compilerArgs>
         </configuration>
       </plugin>
-
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>enable-property-interpolation</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <!-- Unit tests are run by surefire. -->
         <!-- Classes under src/test/java called *Test are included automatically. -->
@@ -79,6 +110,20 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M6</version>
+        <configuration>
+          <!--suppress UnresolvedMavenProperty -->
+          <argLine>-javaagent:${io.opentelemetry.javaagent:opentelemetry-javaagent:jar} -Dotel.traces.exporter=logging</argLine>
+<!--          <argLine>-javaagent:${io.opentelemetry.javaagent:opentelemetry-javaagent:jar}</argLine>-->
+<!--          <systemPropertyVariables>-->
+<!--            <otel.traces.exporter>logging</otel.traces.exporter>-->
+<!--          </systemPropertyVariables>-->
+<!--          <systemProperties>-->
+<!--            <property>-->
+<!--              <name>otel.traces.exporter</name>-->
+<!--              <value>logging</value>-->
+<!--            </property>-->
+<!--          </systemProperties>-->
+        </configuration>
       </plugin>
       <plugin>
         <!-- Integration tests are run by failsafe. -->
